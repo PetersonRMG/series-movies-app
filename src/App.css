@@ -1,0 +1,82 @@
+@layer login , home, filmes, sinopse;
+
+@layer login{
+  .bg-login{
+    background-image: url('assets/img/bgLogin.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+ 
+    
+  }
+ 
+}
+
+
+@layer home {
+  .bg-home{
+      background-image: url('assets/img/bgHome.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+ 
+  }
+    .bg-filme{
+      background-color: darkred;
+      background-image: url('assets/img/filmes.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+ 
+  }  .bg-serie{
+      background-image: url('assets/img/series.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+ 
+  }
+  .cards{
+    height: 200px; 
+    transition: .5s;
+    cursor: pointer;
+  }
+  .cards:hover{
+    transform: scale(1.1) ;
+}
+}
+
+@layer filmes {
+  .imgCards{
+    cursor: pointer;
+  }
+  .cardFilmes{    
+    transition: .5s;
+    
+  }
+  .imgCards:hover .cardFilmes,
+  .cardFilmes:hover{
+    transform: scale(1.1) ;
+}
+
+  .verSinopse:hover{
+    width: 200px;
+    height: 200px;
+
+  }
+}
+
+@layer sinopse {
+
+  .cardSinope{
+    cursor: pointer;
+  }
+  .imgPersonagens{
+     transition: .5s;
+    
+  }
+
+    .cardSinope:hover .imgPersonagens ,
+  .imgPersonagens:hover{
+    transform: scale(1.1) ;
+}
+}
+
+
+
+
