@@ -1,33 +1,61 @@
 import React from "react";
 import { tmdb } from "../../api/tmdb";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Spinners from "../../components/spinners/spinners";
 import BackBtn from "../../components/backBtn/backBtn";
 import atorImg from "../../assets/img/ator.png";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/scrollbar";
 
 export default function Sinopse() {
+  const localizar = useLocation();
+  const [type, setType] = useState();
   const [filme, setFilme] = useState(null);
   const [load, setLoad] = useState(true);
-  const [limit, setLimit] = useState(10);
+  // const [limit, setLimit] = useState(10);
   const [trailer, setTrailer] = useState([]);
   // const [stremers, setStremers] = useState([])
+
+  useState(() => {
+    if (localizar.state?.type !== undefined) {
+      setType(localizar.state.type);
+      console.log(type, "testando type ");
+    }
+  }, [localizar.state]);
+  console.log(type, 'saporra ai sinopse')
 
   const [elenco, setElenco] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
   useEffect(() => {
     async function loadFilme() {
+      try {
+        const endpointElenco =
+          type === 0 ? `/tv/${id}/credits` : type === 1 ? `/movie/${id}/credits`: "";
+        const data = type === 0 ? `/tv/${id}` : type === 1 ? `/movie/${id}`: "";
+        const endpointTrailer =
+          type === 0
+            ? `/tv/${id}/videos?language=pt-BR`
+            : `/movie/${id}/videos?language=pt-BR`;
+        const elen = await tmdb.get(endpointElenco);
+        const response = await tmdb.get(data);
+        const trai = await tmdb.get(endpointTrailer);
+
+        setFilme(response.data);
+        setElenco(elen);
+        setTrailer(trai.data.results);
+        console.log(response.data, "Erro ao puxar informaçoes");
+      } catch (erro) {
+        console.log(erro, "Erro ao puxar informaçoes");
+      }
       // const res = await api.get(`/movie/${id}/watch/providers`);
-      const elen = await tmdb.get(`/movie/${id}/credits`);
-      const response = await tmdb.get(`/movie/${id}`);
-      const trai = await tmdb.get(`/movie/${id}/videos?language=pt-BR`);
-      setFilme(response.data);
       // setStremers(res.data.results)
-      setElenco(elen);
-      setTrailer(trai.data.results);
       setLoad(false);
-      console.log(trai.data, "achando trailer");
+
       // console.log(res, 'onde assistir');
     }
 
@@ -55,7 +83,11 @@ export default function Sinopse() {
         </div>
       ) : (
         <>
-          <BackBtn props={"←Voltar"} />
+          <BackBtn
+            labelBack={"←Voltar"}
+            labelSecond={type === 0 ? "Séries" : "Filmes"}
+            secoundRoute="/cardMidias"
+          />
 
           <div className="row mt-4">
             <div className="col-md-4">
@@ -67,10 +99,9 @@ export default function Sinopse() {
 
             <div className="col-md-8">
               <div className="d-flex align-content-center justify-content-between col-12 col-lg-6">
-                <h2>{filme.title} </h2>
+                <h2>{filme.title || filme.name} </h2>
                 <p className="mt-3 small">
-                  <span className="badge bg-success">Diretor</span> -{" "}
-                  {elenco.data.crew[0].name}
+                  <span className="badge bg-success">Diretor</span> - {/* 1 */}
                 </p>
               </div>
               <p className="text-light">
@@ -85,13 +116,10 @@ export default function Sinopse() {
                     })
                   : "Data não disponivel"}
               </p>
-
               <p>{filme.overview}</p>
-
               <p>
                 ⭐ Nota: <strong>{filme.vote_average}</strong>
               </p>
-
               <div>
                 {filme.genres.map((g) => (
                   <span key={g.id} className="badge bg-primary me-2">
@@ -113,25 +141,65 @@ export default function Sinopse() {
               ) : (
                 <p className="mt-3 text-light">Trailer não disponível</p>
               )}
+              {type === 0 && filme?.seasons && (
+                <div className="mt-4">
+                  <h4 className="mb-3">Temporadas:</h4>
 
-              {/*               
-              <h3>Onde assistir :</h3>
-              <div className="row flex-sm-wrap gap-5 my-3 mx-auto align-content-center">
-                  {stremers.map((item) => (
-                    <div className="col-4 col-lg-1 " key={item.provider_id}>
+                  <Swiper
+                    spaceBetween={16}
+                    slidesPerView="auto"
+                    grabCursor={true}
+                  >
+                    {filme.seasons.map((item) => (
+                      <SwiperSlide key={item.id} style={{ width: "80px" }}>
+                        <img
+                          src={
+                            item.poster_path
+                              ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
+                              : "/placeholder-season.png"
+                          }
+                          className="w-100 rounded"
+                          alt={item.name}
+                        />
+                        <p className="text-link  badge ">{item.name} </p>
+                        <br />
+                        <strong>{item.character}</strong>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+              )}
+              <div>
+                <h3 className="mt-5">Elenco :</h3>
+                <Swiper
+                  spaceBetween={16}
+                  slidesPerView="auto"
+                  grabCursor={true}
+                >
+                  {elenco.data.cast.map((item) => (
+                    <SwiperSlide
+                      style={{ width: "140px" }}
+                      lassName=" cardSinope col-4 col-lg-2 "
+                      key={item.cast_id}
+                      onClick={() => navigate(`/atores/${item.id}`)}
+                    >
                       <img
-                        className="col-12  col-lg-12  rounded-4 m-auto"
-                        src={`https://image.tmdb.org/t/p/w500${item.logo_path}`}
-                        alt=""
+                        src={
+                          item.profile_path
+                            ? `https://image.tmdb.org/t/p/w500${item.profile_path}`
+                            : atorImg
+                        }
+                        alt={item.name}
+                        className="w-100 rounded"
                       />
+                      <p className="text-link  badge ">{item.name} </p>
                       <br />
-                      <p className="  badge">{item.provider_name}</p>
-                    </div>
+                      <strong>{item.character}</strong>
+                    </SwiperSlide>
                   ))}
-                </div> */}
-
-              <h3 className="mt-5">Elenco :</h3>
-              <div className="row  gap-5 my-3 mx-auto align-content-center">
+                </Swiper>
+              </div>
+              {/* <div className="row  gap-5 my-3 mx-auto align-content-center">
                 {elenco.data.cast.slice(0, limit).map((item) => (
                   <div
                     className=" cardSinope col-4 col-lg-2 "
@@ -171,7 +239,7 @@ export default function Sinopse() {
                     </button>
                   )}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </>

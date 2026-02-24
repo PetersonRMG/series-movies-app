@@ -1,15 +1,34 @@
 import React from "react";
 import { tmdb } from "../../api/tmdb";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Spinners from "../../components/spinners/spinners";
 import BackBtn from "../../components/backBtn/backBtn";
 import atorImg from "../../assets/img/ator.png";
 
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/scrollbar";
+
 export default function Atores() {
   const { id } = useParams();
-  
+  const navigate = useNavigate();
+  const [setType] = useState();
+  const localizar = useLocation();
   const [load, setLoad] = useState(true);
+  const [moviesPerson, setMoviesPerson] = useState([]);
+  const [seriesPerson, setSeriesPerson] = useState([]);
+  // const [limit, setLimit] = useState(10);
+
+  useState(() => {
+    if (localizar.state?.type !== undefined) {
+      setType(localizar.state.type);
+    }
+  }, [localizar.state]);
+
+  
 
   const [personagem, setPersonagem] = useState([]);
 
@@ -17,12 +36,18 @@ export default function Atores() {
     async function loadPersonagem() {
       // const res = await api.get(`/movie/${id}/watch/providers`);
       const elen = await tmdb.get(`/person/${id}`);
+      const maisMidia = await tmdb.get(`/person/${id}/combined_credits`);
+      const midia = maisMidia.data.cast;
+      const filmeAtor = midia.filter((item) => item.media_type === "movie");
+      const serieAtor = midia.filter((item) => item.media_type === "tv");
       //   const response = await api.get(`/movie/${id}`);
       //   setFilme(response.data);
       // setStremers(res.data.results)
       setPersonagem(elen.data);
+      setMoviesPerson(filmeAtor);
+      setSeriesPerson(serieAtor);
       setLoad(false);
-      console.log(elen, "personagem");
+      console.log(midia, "mais filmes atores");
       // console.log(res, 'onde assistir');
     }
 
@@ -43,7 +68,11 @@ export default function Atores() {
         </div>
       ) : (
         <>
-          <BackBtn props={"←Voltar"} />
+          <BackBtn
+            labelBack="←Voltar"
+            labelSecond="Filmes"
+            secoundRoute="/cardMidias"
+          />
 
           <div className="row mt-4">
             <div className="col-md-4">
@@ -80,63 +109,81 @@ export default function Atores() {
                 Pais de origem: <strong>{personagem.place_of_birth}</strong>
               </p>
 
-              {/* <p>{filme.overview}</p>
-
-              <p>
-                ⭐ Nota: <strong>{filme.vote_average}</strong>
-              </p>
-
               <div>
-                {filme.genres.map((g) => (
-                  <span key={g.id} className="badge bg-primary me-2">
-                    {g.name}
-                  </span>
-                ))}
+                <h3 className="mt-5">Outros Filmes :</h3>
+                <Swiper
+                  spaceBetween={16}
+                  slidesPerView="auto"
+                  grabCursor={true}
+                >
+                  {moviesPerson.map((item) => (
+                    <SwiperSlide
+                      style={{ width: "140px" }}
+                      className=" cardSinope col-4 col-lg-2 "
+                      key={item.cast_id}
+                      onClick={() =>
+                        navigate(`/filme/${item.id}`, {
+                          state: {
+                            type: 1,
+                          },
+                        })
+                      }
+                    >
+                      <img
+                        src={
+                          item.poster_path
+                            ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                            : atorImg
+                        }
+                        alt={item.name}
+                        className="w-100 rounded"
+                      />
+                      <p className="text-center mt-2 small">
+                        {item.original_title}{" "}
+                      </p>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               </div>
 
-              <h3 className="mt-5">Elenco :</h3>
-              <div className="row  gap-5 my-3 mx-auto align-content-center">
-                {elenco.data.cast.slice(0, limit).map((item) => (
-                  <div
-                    className=" cardSinope col-4 col-lg-2 "
-                    key={item.cast_id}
-                    onClick={() => navigate(`/ator/${item.id}`)}
-                  >
-                    <img
-                      className="imgPersonagens col-12 rounded-4 d-block mx-auto"
-                      src={
-                        item.profile_path
-                          ? `https://image.tmdb.org/t/p/w500${item.profile_path}`
-                          : atorImg
+              <div>
+                <h3 className="mt-5">Outras Séries :</h3>
+                <Swiper
+                  spaceBetween={16}
+                  slidesPerView="auto"
+                  grabCursor={true}
+                >
+                  {seriesPerson.map((item) => (
+                    <SwiperSlide
+                      style={{ width: "140px" }}
+                      className=" cardSinope col-4 col-lg-2 "
+                      key={item.cast_id}
+                      onClick={() =>
+                        navigate(`/tv/${item.id}`, {
+                          state: {
+                            type: 0,
+                          },
+                        })
                       }
-                      alt={item.name}
-                    />
-                    <br />
-                    <p className="  badge">
-                      {item.name} <br />
-                      <br /> Como : {item.character}
-                    </p>
-                  </div>
-                ))}
-                <div className="d-flex justify-content-around">
-                  {limit < elenco.data.cast.length && (
-                    <button
-                      className="btn btn-link"
-                      onClick={() => setLimit(limit + 10)}
                     >
-                      Ver mais
-                    </button>
-                  )}
-                  {limit > 10 && (
-                    <button
-                      className="btn btn-link link-danger"
-                      onClick={() => setLimit(limit - 10)}
-                    >
-                      Ver menos
-                    </button>
-                  )}
-                </div>
-              </div> */}
+                      <img
+                        src={
+                          item.poster_path
+                            ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                            : atorImg
+                        }
+                        alt={item.name}
+                        className="w-100 rounded"
+                      />
+                      <p className="text-center mt-2 small">
+                        {item.original_name}{" "}
+                      </p>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              </div>
+
+              
             </div>
           </div>
         </>

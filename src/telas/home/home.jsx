@@ -23,15 +23,26 @@ export default function Home() {
           App Series e Filme
         </h1>
         <div className="row justify-content-between  ">
+          {/* series */}
+          
           <div
             className="cards bg-serie col-5   border-0 rounded align-content-center text-center"
-            onClick={() => navigate("/series")}
+            onClick={() => navigate("/cardMidias",{
+              state:{
+                type:0,
+              },
+            })}
           >
             
           </div>
+          {/* filmess */}
           <div
             className="cards col-5 bg-filme border-0 rounded align-content-center text-center"
-            onClick={() => navigate("/filmes")}
+            onClick={() => navigate("/cardMidias", {
+              state:{
+                type:1,
+              },
+            })}
           >
             
           </div>

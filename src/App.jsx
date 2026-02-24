@@ -3,8 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import Login from './telas/login/login'
 import Cadastro from './telas/cadastro/cadastro';
 import Home from './telas/home/home';
-import Filmes from './telas/filmes/filmes'; 
-import Series from './telas/series/series';
+import CardMidias from './telas/cardMidias/cardMidias'; 
 import Sinopse from './telas/sinopse/sinopse';
 import Atores from './telas/atores/atores';
 
@@ -23,11 +22,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
-        <Route path="/home" element={<Home/>} />
-        <Route path="/series" element={<Series/>} />
-        <Route path="/filmes" element={<Filmes/>} />
-        <Route path="/filme/:id" element={<Sinopse/>} />
-        <Route path="/atores/:id" element={<Atores/>} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/cardMidias" element={<CardMidias />} />
+        <Route path="/filme/:id" element={<Sinopse />} />
+        <Route path="/tv/:id" element={<Sinopse />} />
+        <Route path="/atores/:id" element={<Atores />} />
       </Routes>
     </>
   );
