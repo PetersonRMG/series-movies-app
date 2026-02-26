@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Spinners from "../../components/spinners/spinners";
 import BackBtn from "../../components/backBtn/backBtn";
 import atorImg from "../../assets/img/ator.png";
+import { mediaType } from "../../components/mediaType/mediaType";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -15,7 +16,7 @@ import "swiper/css/scrollbar";
 export default function Atores() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [setType] = useState();
+  const [type,setType] = useState('');
   const localizar = useLocation();
   const [load, setLoad] = useState(true);
   const [moviesPerson, setMoviesPerson] = useState([]);
@@ -23,12 +24,10 @@ export default function Atores() {
   // const [limit, setLimit] = useState(10);
 
   useState(() => {
-    if (localizar.state?.type !== undefined) {
+    if (localizar.state ) {
       setType(localizar.state.type);
     }
-  }, [localizar.state]);
-
-  
+  }, [localizar.state]);  
 
   const [personagem, setPersonagem] = useState([]);
 
@@ -47,8 +46,7 @@ export default function Atores() {
       setMoviesPerson(filmeAtor);
       setSeriesPerson(serieAtor);
       setLoad(false);
-      console.log(midia, "mais filmes atores");
-      // console.log(res, 'onde assistir');
+ 
     }
 
     loadPersonagem();
@@ -68,12 +66,35 @@ export default function Atores() {
         </div>
       ) : (
         <>
-          <BackBtn
+          {/* <BackBtn
             labelBack="←Voltar"
-            labelSecond="Filmes"
+            labelSecond={type === "tv" ? "Séries" : "Filmes"}
             secoundRoute="/cardMidias"
-          />
+            secondState={type}
+          /> */}
 
+          <div className="col-sm-2 text-start row justify-content-between">
+            <button
+              className="btn btn-link text-light col-5 "
+              onClick={() => navigate(-1)}
+            >
+              ←Voltar
+            </button>
+            
+              <button
+                className="btn btn-link text-light col-5"
+                onClick={() =>
+                  navigate("/cardMidias", {
+                    state: {
+                      type: type,
+                    },
+                  })
+                }
+              >
+                {type === "tv" ? "Séries" : "Filmes"}
+              </button>
+            
+          </div>
           <div className="row mt-4">
             <div className="col-md-4">
               <img
@@ -88,7 +109,7 @@ export default function Atores() {
 
             <div className="col-md-8">
               <div className="d-flex align-content-center justify-content-between col-12 col-lg-12 my-5">
-                <h2>{personagem.also_known_as?.[0]} </h2>
+                <h2>{personagem.name} </h2>
                 <p className="text-light">
                   <strong>Nascido:</strong>{" "}
                   {personagem?.birthday
@@ -124,7 +145,7 @@ export default function Atores() {
                       onClick={() =>
                         navigate(`/filme/${item.id}`, {
                           state: {
-                            type: 1,
+                            type: mediaType.MOVIE,
                           },
                         })
                       }
@@ -161,7 +182,7 @@ export default function Atores() {
                       onClick={() =>
                         navigate(`/tv/${item.id}`, {
                           state: {
-                            type: 0,
+                            type: mediaType.TV,
                           },
                         })
                       }
@@ -182,9 +203,8 @@ export default function Atores() {
                   ))}
                 </Swiper>
               </div>
-
-              
             </div>
+            
           </div>
         </>
       )}

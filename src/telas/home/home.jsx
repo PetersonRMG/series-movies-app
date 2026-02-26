@@ -1,19 +1,15 @@
-import { useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import React from "react";
 import BackBtn from "../../components/backBtn/backBtn";
-import { tmdb } from "../../api/tmdb";
+import { mediaType } from "../../components/mediaType/mediaType";
+
 
 export default function Home() {
   const navigate = useNavigate();
-  // console.log("TOKEN:", import.meta.env.VITE_TMDB_TOKEN, 'teste');
+ 
 
-  useEffect(() => {
-    tmdb
-      .get("/genre/movie/list")
-      .then((res) => console.log(res.data))
-      .catch((err) => console.error(err));
-  }, []);
+
   return (
     <main className="container-fluid bg-home col-sm-12 text-light w-100 vh-100 d-grid justify-content-center align-items-center">
       <div className="">
@@ -24,31 +20,34 @@ export default function Home() {
         </h1>
         <div className="row justify-content-between  ">
           {/* series */}
-          
+
           <div
             className="cards bg-serie col-5   border-0 rounded align-content-center text-center"
-            onClick={() => navigate("/cardMidias",{
-              state:{
-                type:0,
-              },
-            })}
-          >
-            
-          </div>
+            onClick={() =>
+              navigate("/cardMidias", {
+                state: {
+                  type: mediaType.TV,
+                },
+              })
+            }
+          ></div>
           {/* filmess */}
           <div
             className="cards col-5 bg-filme border-0 rounded align-content-center text-center"
-            onClick={() => navigate("/cardMidias", {
-              state:{
-                type:1,
-              },
-            })}
+            onClick={() =>
+              navigate("/cardMidias", {
+                state: {
+                  type: mediaType.MOVIE,
+                },
+              })
+            }
+          ></div>
+          <button
+            className="btn btn-link text-light col-5 "
+            onClick={() => navigate("/")}
           >
-            
-          </div>
-          <div className="text-center ">
-            <BackBtn props={"←Voltar"} />
-          </div>
+            ←Voltar
+          </button>
         </div>
       </div>
     </main>

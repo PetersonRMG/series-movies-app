@@ -1,10 +1,12 @@
 import React from "react";
 import { tmdb } from "../../api/tmdb";
+
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Spinners from "../../components/spinners/spinners";
 import BackBtn from "../../components/backBtn/backBtn";
 import atorImg from "../../assets/img/ator.png";
+import cartaz from "../../assets/img/cartaz.png";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -13,7 +15,7 @@ import "swiper/css/scrollbar";
 
 export default function Sinopse() {
   const localizar = useLocation();
-  const [type, setType] = useState();
+  const [type, setType] = useState("");
   const [filme, setFilme] = useState(null);
   const [load, setLoad] = useState(true);
   // const [limit, setLimit] = useState(10);
@@ -21,12 +23,10 @@ export default function Sinopse() {
   // const [stremers, setStremers] = useState([])
 
   useState(() => {
-    if (localizar.state?.type !== undefined) {
+    if (localizar.state?.type) {
       setType(localizar.state.type);
-      console.log(type, "testando type ");
     }
   }, [localizar.state]);
-  console.log(type, 'saporra ai sinopse')
 
   const [elenco, setElenco] = useState([]);
   const { id } = useParams();
@@ -34,13 +34,9 @@ export default function Sinopse() {
   useEffect(() => {
     async function loadFilme() {
       try {
-        const endpointElenco =
-          type === 0 ? `/tv/${id}/credits` : type === 1 ? `/movie/${id}/credits`: "";
-        const data = type === 0 ? `/tv/${id}` : type === 1 ? `/movie/${id}`: "";
-        const endpointTrailer =
-          type === 0
-            ? `/tv/${id}/videos?language=pt-BR`
-            : `/movie/${id}/videos?language=pt-BR`;
+        const endpointElenco = `/${type}/${id}/credits`;
+        const data = `/${type}/${id}`;
+        const endpointTrailer = `/${type}/${id}/videos?language=pt-BR`;
         const elen = await tmdb.get(endpointElenco);
         const response = await tmdb.get(data);
         const trai = await tmdb.get(endpointTrailer);
@@ -48,7 +44,7 @@ export default function Sinopse() {
         setFilme(response.data);
         setElenco(elen);
         setTrailer(trai.data.results);
-        console.log(response.data, "Erro ao puxar informaçoes");
+ 
       } catch (erro) {
         console.log(erro, "Erro ao puxar informaçoes");
       }
@@ -83,25 +79,60 @@ export default function Sinopse() {
         </div>
       ) : (
         <>
-          <BackBtn
-            labelBack={"←Voltar"}
-            labelSecond={type === 0 ? "Séries" : "Filmes"}
-            secoundRoute="/cardMidias"
-          />
+          <div className="col-sm-2 text-start row justify-content-between">
+            <button
+              className="btn btn-link text-light col-5 "
+              onClick={() => navigate(-1)}
+            >
+              ←Voltar
+            </button>
+
+            <button
+              className="btn btn-link text-light col-5"
+              onClick={() =>
+                navigate("/cardMidias", {
+                  state: {
+                    type: type,
+                  },
+                })
+              }
+            >
+              {type === "tv" ? "Séries" : "Filmes"}
+            </button>
+          </div>
 
           <div className="row mt-4">
             <div className="col-md-4">
               <img
                 className="w-75 rounded"
-                src={`https://image.tmdb.org/t/p/w500${filme.poster_path}`}
+                src={
+                  filme.poster_path
+                    ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+                    : cartaz
+                }
               />
             </div>
 
             <div className="col-md-8">
-              <div className="d-flex align-content-center justify-content-between col-12 col-lg-6">
-                <h2>{filme.title || filme.name} </h2>
+              <div className="d-flex align-content-center justify-content-between col-12 col-lg-8">
+                <h2>
+                  {filme.title || filme.name} <h6>{filme?.tagline}</h6>
+                </h2>
+
                 <p className="mt-3 small">
-                  <span className="badge bg-success">Diretor</span> - {/* 1 */}
+                  <span className="badge bg-success"> Diretor</span> -
+                  {filme.created_by?.map((item) => (
+                    <span key={item.id}>{item.name} </span>
+                  ))}
+                  {elenco.data?.crew
+                    ?.filter(
+                      (item, index, arr) =>
+                        item.known_for_department === "Directing" &&
+                        arr.findIndex((i) => i.id === item.id) === index,
+                    )
+                    .map((item) => (
+                      <span key={item.id}>{item.name} {" "}</span>
+                    ))}
                 </p>
               </div>
               <p className="text-light">
@@ -141,7 +172,7 @@ export default function Sinopse() {
               ) : (
                 <p className="mt-3 text-light">Trailer não disponível</p>
               )}
-              {type === 0 && filme?.seasons && (
+              {type === "tv" && filme?.seasons && (
                 <div className="mt-4">
                   <h4 className="mb-3">Temporadas:</h4>
 
@@ -162,6 +193,10 @@ export default function Sinopse() {
                           alt={item.name}
                         />
                         <p className="text-link  badge ">{item.name} </p>
+                        <span className="badge fw-lighter">
+                          {" "}
+                          Episodios {item.episode_count}
+                        </span>
                         <br />
                         <strong>{item.character}</strong>
                       </SwiperSlide>
@@ -179,9 +214,13 @@ export default function Sinopse() {
                   {elenco.data.cast.map((item) => (
                     <SwiperSlide
                       style={{ width: "140px" }}
-                      lassName=" cardSinope col-4 col-lg-2 "
+                      className=" cardSinope col-4 col-lg-2 "
                       key={item.cast_id}
-                      onClick={() => navigate(`/atores/${item.id}`)}
+                      onClick={() =>
+                        navigate(`/atores/${item.id}`, {
+                          state: { type: type },
+                        })
+                      }
                     >
                       <img
                         src={
